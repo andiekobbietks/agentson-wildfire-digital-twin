@@ -19,11 +19,13 @@ def validate_profile_envelopes(document):
             envelope = json.loads(text)
         except (TypeError, json.JSONDecodeError):
             continue
-        if envelope.get("profile") != PROFILE:
+        if not isinstance(envelope, dict) or envelope.get("profile") != PROFILE:
             continue
-        for key in ("event_type", "run_id", "source_topic", "payload"):
+        for key in ("event_type", "run_id", "payload"):
             if key not in envelope:
                 errors.append(f"entries[{index}].text: missing profile field {key}")
+        if "source_topic" in envelope and not isinstance(envelope["source_topic"], str):
+            errors.append(f"entries[{index}].text: source_topic must be a string")
         if envelope.get("run_id") != document.get("id"):
             errors.append(f"entries[{index}].text: run_id does not match session id")
     return errors
@@ -38,7 +40,7 @@ def main():
     schema = json.loads(Path(args.schema).read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
-    errors = sorted(validator.iter_errors(trace), key=lambda error: list(error.path))
+    errors = sorted(validator.iter_errors(trace), key=lambda error: str(list(error.path)))
     errors.extend(validate_profile_envelopes(trace))
     if errors:
         for error in errors:
