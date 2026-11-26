@@ -1,0 +1,12 @@
+# Topic contract for the simulated wildfire demonstrator.
+# All image timestamps must use the simulation clock when use_sim_time=true.
+wildfire_bridge:
+  ros__parameters:
+    simulation_status_topic: /wildfire/simulation/status
+    camera_image_topic: /wildfire/sensors/front/image
+    perception_raw_topic: /wildfire/perception/raw
+    px4_vehicle_status_topic: /fmu/out/vehicle_status_v1
+    px4_vehicle_position_topic: /fmu/out/vehicle_local_position
+    normalised_vehicle_state_topic: /wildfire/vehicle/state
+    coordinate_convention: NED
+    simulation_only: true

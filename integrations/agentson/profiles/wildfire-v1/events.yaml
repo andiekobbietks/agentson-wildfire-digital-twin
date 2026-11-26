@@ -1,0 +1,17 @@
+profile: agentson-wildfire-v1
+canonical_format: AgentSON-v1.2
+encoding: observation.text-json-envelope
+events:
+  - scenario.created
+  - dataset.referenced
+  - simulation.initialised
+  - simulation.status
+  - simulation.clock
+  - sensor.frame.received
+  - robotics.vehicle.state
+  - robotics.failsafe.triggered
+  - perception.inference.completed
+  - perception.inference.failed
+  - perception.detection.reported
+  - evaluation.run.completed
+  - run.completed
