@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials/
+
+# Simulation caches and generated artefacts
+.cache/
+logs/
+outputs/
+runs/
+artifacts/
+*.bag
+*.db3
+*.mcap
+*.usd
+*.usda
+*.usdc
+*.blend
+*.mp4
+*.mov
+
+# Large geospatial and imagery data
+data/raw/
+data/processed/
+*.tif
+*.tiff
+*.las
+*.laz
+*.dem
+*.jp2
+*.SAFE/
+
+# Model weights
+*.onnx
+*.pt
+*.pth
+*.engine
+*.blob
+models/weights/
+
+# Build
+build/
+dist/
+*.egg-info/
