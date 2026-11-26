@@ -79,7 +79,7 @@ The ROS 2 trace node currently emits:
 - the event declared in the inference payload, normally `perception.inference.completed` or `perception.inference.failed`;
 - `robotics.vehicle.state` from `/wildfire/vehicle/state`.
 
-The current OpenVINO node emits tensor shapes and latency only. It does not emit `perception.detection.reported`. The PX4 adapter is optional, read-only and requires `px4_msgs` built for the matching PX4 release.
+The current OpenVINO node emits tensor shapes and latency only. It does not emit `perception.detection.reported`. The status node reports whether image messages are arriving but does not infer the simulator's identity. The PX4 adapter is optional, read-only and requires `px4_msgs` built for the matching PX4 release.
 
 ## 7. Conformance
 
