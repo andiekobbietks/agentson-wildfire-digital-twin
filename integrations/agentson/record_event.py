@@ -3,7 +3,6 @@
 import argparse
 import json
 import re
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -53,14 +52,15 @@ def main():
             ],
         }
 
+    event_text = args.detail or f"{args.component}: {args.event}"
     document["entries"].append(
         {
             "type": "observation",
-            "text": args.detail or f"{args.component}: {args.event}",
+            "text": event_text,
+            "source": "system",
             "agent": "wildfire-integration",
             "timestamp": timestamp,
             "provenance": {"confidence": "confirmed", "source": "system"},
-            "metadata": {"component": args.component, "event": args.event},
         }
     )
     document["heartbeat"] = utc_now()
