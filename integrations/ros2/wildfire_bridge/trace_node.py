@@ -1,4 +1,8 @@
-"""Record ROS 2 pipeline events as AgentSON v1.2 observation entries."""
+"""Record ROS 2 pipeline events as AgentSON v1.2 observation entries.
+
+The domain event is encoded as JSON inside the canonical observation.text field.
+This keeps the adapter compatible with AgentSON v1.2 without inventing schema keys.
+"""
 import json
 import os
 import threading
@@ -16,6 +20,16 @@ def now_ms():
 
 def utc_now():
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def event_type_for(topic, payload):
+    if payload.get("event"):
+        return payload["event"]
+    return {
+        "/wildfire/simulation/status": "simulation.status",
+        "/wildfire/perception/raw": "perception.inference.completed",
+        "/wildfire/vehicle/state": "robotics.vehicle.state",
+    }.get(topic, "integration.message.received")
 
 
 class AgentSONTraceNode(Node):
@@ -72,16 +86,19 @@ class AgentSONTraceNode(Node):
     def record(self, topic, message):
         try:
             payload = json.loads(message.data)
-            event_name = payload.get("event", "ros2.message.received")
-            detail = json.dumps(
-                {"topic": topic, "payload": payload}, sort_keys=True, separators=(",", ":")
-            )
         except json.JSONDecodeError:
-            event_name = "ros2.message.received"
-            detail = json.dumps({"topic": topic, "text": message.data})
+            payload = {"text": message.data}
+        event_type = event_type_for(topic, payload)
+        event_document = {
+            "profile": "agentson-wildfire-v1",
+            "event_type": event_type,
+            "run_id": self.session_id,
+            "source_topic": topic,
+            "payload": payload,
+        }
         entry = {
             "type": "observation",
-            "text": f"{event_name} {detail}",
+            "text": json.dumps(event_document, sort_keys=True, separators=(",", ":")),
             "source": "sensor" if "sensor" in topic or "perception" in topic else "system",
             "agent": "wildfire-ros2-bridge",
             "timestamp": now_ms(),
@@ -92,7 +109,10 @@ class AgentSONTraceNode(Node):
             self.document["entries"].append(entry)
             self.document["heartbeat"] = utc_now()
             temp = self.path.with_suffix(self.path.suffix + ".tmp")
-            temp.write_text(json.dumps(self.document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            temp.write_text(
+                json.dumps(self.document, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
             os.replace(temp, self.path)
 
 
