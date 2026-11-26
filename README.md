@@ -31,6 +31,18 @@ The intended demonstrator will reconstruct a bounded wildfire scenario in a digi
 
 These are candidate components, not a claim that every integration is already implemented or mutually compatible. Versions and interfaces must pass a compatibility gate before being pinned.
 
+## Integration workspace
+
+The initial integration scaffolding now lives under [`integrations/`](integrations/README.md):
+
+- [NVIDIA Isaac Sim](integrations/isaac-sim/README.md): scene, sensor and robot simulation boundary.
+- [ROS 2](integrations/ros2/README.md): minimal Python package and status heartbeat scaffold.
+- [PX4 SITL](integrations/px4/README.md): separate software-in-the-loop baseline; no Isaac bridge is claimed.
+- [OpenVINO](integrations/openvino/README.md): generic user-supplied image-model inference harness.
+- [AgentSON](integrations/agentson/README.md): local v1.2 session/event writer.
+
+These are integration scaffolds, not complete end-to-end integrations. The OpenVINO adapter has no bundled wildfire model; the ROS 2 node does not connect to a simulator; PX4 SITL is not wired to Isaac Sim; and no operational wildfire prediction capability is claimed.
+
 ## MVP sequence
 
 1. **Scenario definition:** choose one documented incident and define a bounded area, timeline, and evidence register.
@@ -49,6 +61,7 @@ These are candidate components, not a claim that every integration is already im
 - [Research and data sources](docs/RESEARCH.md)
 - [Security and responsible use](docs/SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
+- [Integration workspace](integrations/README.md)
 
 ## Getting involved
 
