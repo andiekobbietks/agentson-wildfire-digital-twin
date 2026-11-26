@@ -31,8 +31,11 @@ class OpenVINOImageNode(Node):
         model = core.read_model(model_path)
         self.compiled = core.compile_model(model, self.get_parameter("device").value)
         self.input_port = self.compiled.input(0)
-        self.input_shape = list(self.input_port.shape)
-        if len(self.input_shape) != 4 or any(not isinstance(d, int) for d in self.input_shape):
+        partial_shape = self.input_port.get_partial_shape()
+        if not partial_shape.is_static:
+            raise RuntimeError(f"Expected a static 4D image input, got {partial_shape}")
+        self.input_shape = [int(dim) for dim in partial_shape.get_shape()]
+        if len(self.input_shape) != 4:
             raise RuntimeError(f"Expected a static 4D image input, got {self.input_shape}")
         self.bridge = CvBridge()
         self.scale = float(self.get_parameter("scale").value)
@@ -49,19 +52,25 @@ class OpenVINOImageNode(Node):
 
     def preprocess(self, image):
         shape = self.input_shape
-        if shape[1] in (1, 3, 4):
-            height, width = shape[2], shape[3]
+        if shape[1] in (1, 3, 4):  # NCHW
+            channels, height, width = shape[1], shape[2], shape[3]
             resized = cv2.resize(image, (width, height))
-            if shape[1] == 1:
+            if channels == 1:
                 resized = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)[..., None]
-            else:
+            elif channels == 3:
                 resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-                if shape[1] == 4:
-                    raise ValueError("Four-channel input needs an explicit model adapter")
+            else:
+                raise ValueError("Four-channel NCHW input needs an explicit model adapter")
             tensor = np.transpose(resized, (2, 0, 1))[None, ...]
-        else:
-            height, width = shape[1], shape[2]
-            resized = cv2.cvtColor(cv2.resize(image, (width, height)), cv2.COLOR_BGR2RGB)
+        else:  # NHWC
+            height, width, channels = shape[1], shape[2], shape[3]
+            resized = cv2.resize(image, (width, height))
+            if channels == 1:
+                resized = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)[..., None]
+            elif channels == 3:
+                resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+            else:
+                raise ValueError(f"Unsupported NHWC channel count: {channels}")
             tensor = resized[None, ...]
         return tensor.astype(np.float32) * self.scale
 
